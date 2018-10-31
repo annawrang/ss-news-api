@@ -1,0 +1,370 @@
+#%RAML 0.8
+---
+
+title: "Api Docs 2"
+baseUri: http://localhost:8080/{version}
+version: 1.0
+protocols: [ HTTP ]
+mediaType: application/json
+documentation:
+  - title: RESTful API documentation for Api Docs 2
+    content: |
+      Api Docs 2 documentation
+
+/posts:
+  get:
+    description: get posts with with their comments, likes, comment-likes and comment-replies
+    queryParameters:
+      limit:
+        description: The limit of the number of posts per page
+        type: integer
+        required: false
+        default: 10
+        example: 20
+      offset:
+        description: The start of the post to return
+        type: integer
+        required: false
+        default: 0
+        example: 25
+    responses:
+      200:
+        description: error
+        body:
+          example: !include examples/example.json
+      500:
+        description: |
+          Internal server error
+        body:
+          example: !include examples/server_error.json
+  post:
+    description: creates a new post from a user
+    body:
+      example:
+    responses:
+      200:
+        body:
+          example:
+      400:
+        description: |
+          Error Codes:
+           - *sale.ValidateSaleUuid*: The uuid already exists
+        body:
+          example:
+      500:
+        description: |
+          Internal server error
+        body:
+          example: !include examples/server_error.json
+  /user:
+    /{userNumber}:
+      get:
+        description: get posts written by a user (plus the posts' comments, likes, replies, commentlikes)
+        responses:
+          200:
+            body:
+              example:
+          404:
+            description: |
+              The requested resource can't be found
+            body:
+              example:
+          500:
+            description:  |
+              Internal server error
+            body:
+              example: !include examples/server_error.json
+  /{postNumber}:
+    get:
+      description: gets a post with its comments, likes, comment-likes and comment-replies
+      responses:
+        200:
+          body:
+            example:
+        404:
+          description: |
+            The requested resource can't be found
+          body:
+            example: !include examples/not_found_error.json
+        500:
+          description:  |
+            Internal server error
+          body:
+            example: !include examples/server_error.json
+    delete:
+      description: deletes a post with its comments, likes, comment-likes and comment-replies
+      responses:
+        200:
+          body:
+            example:
+        404:
+          description: |
+            The requested resource can't be found
+          body:
+            example: !include examples/not_found_error.json
+        500:
+          description:  |
+            Internal server error
+          body:
+            example: !include examples/server_error.json
+    put:
+      description: updates a post
+      body:
+        example:
+      responses:
+        200:
+          body:
+            example:
+        400:
+          description: |
+            Error Codes:
+            - *sale.ValidateSaleUuid*: The uuid already exists
+          body:
+            example: !include examples/invalid_field_error.json
+        404:
+          description: |
+            The requested resource can't be found
+          body:
+            example: !include examples/not_found_error.json
+        500:
+          description:  |
+            Internal server error
+          body:
+           example: !include examples/server_error.json
+    /likes:
+      post:
+        description: create a post-like from a user
+        body:
+          example:
+        responses:
+          200:
+            body:
+              example:
+          404:
+            description: |
+              The requested resource can't be found
+            body:
+               example: !include examples/not_found_error.json
+          500:
+            description:  |
+              Internal server error
+            body:
+              example: !include examples/server_error.json
+      /{likeNumber}:
+        delete:
+          description: delete a post-like from a user (unlike)
+          responses:
+            200:
+              body:
+                example:
+            404:
+              description: |
+                The requested resource can't be found
+              body:
+                example: !include examples/not_found_error.json
+            500:
+              description:  |
+                Internal server error
+              body:
+                example: !include examples/server_error.json
+    /comments:
+      post:
+        description: create a post-comment
+        body:
+          example:
+        responses:
+          200:
+            body:
+              example:
+          400:
+            description: |
+              Error Codes:
+              - *sale.ValidateSaleUuid*: The uuid already exists
+            body:
+              example: !include examples/invalid_field_error.json
+          404:
+            description: |
+              The requested resource can't be found
+            body:
+              example: !include examples/not_found_error.json
+          500:
+            description:  |
+              Internal server error
+            body:
+              example: !include examples/server_error.json
+      /{commentNumber}:
+        delete:
+          description: delete a post-comment
+          responses:
+            200:
+              body:
+                example:
+            404:
+              description: |
+                The requested resource can't be found
+              body:
+                example: !include examples/not_found_error.json
+            500:
+              description:  |
+                Internal server error
+              body:
+                example: !include examples/server_error.json
+        put:
+          description: update a post-comment
+          body:
+            example:
+          responses:
+            200:
+              body:
+                example:
+            400:
+              description: |
+                Error Codes:
+                - *sale.ValidateSaleUuid*: The uuid already exists
+              body:
+                example: !include examples/invalid_field_error.json
+            404:
+              description: |
+                The requested resource can't be found
+              body:
+                example: !include examples/not_found_error.json
+            500:
+              description:  |
+                Internal server error
+              body:
+                example: !include examples/server_error.json
+        /likes:
+          post:
+            description: create a post-comment like
+            responses:
+              200:
+                body:
+                  example:
+              404:
+                description: |
+                  The requested resource can't be found
+                body:
+                  example: !include examples/not_found_error.json
+              500:
+                description:  |
+                  Internal server error
+                body:
+                  example: !include examples/server_error.json
+          /{likeNumber}:
+            delete:
+              description: delete a post-comment like (unlike)
+              responses:
+                200:
+                   body:
+                     example:
+                404:
+                  description: |
+                    The requested resource can't be found
+                  body:
+                    example: !include examples/not_found_error.json
+                500:
+                  description:  |
+                    Internal server error
+                  body:
+                    example: !include examples/server_error.json
+        /replies:
+          post:
+            description: create a post-comment-reply
+            body:
+              example:
+            responses:
+              200:
+                body:
+                  example:
+              400:
+                description: |
+                  Error Codes:
+                  - *sale.ValidateSaleUuid*: The uuid already exists
+                body:
+                  example: !include examples/invalid_field_error.json
+              404:
+                description: |
+                  The requested resource can't be found
+                body:
+                  example: !include examples/not_found_error.json
+              500:
+                description:  |
+                  Internal server error
+                body:
+                  example: !include examples/server_error.json
+          /{commentReplyNumber}:
+            put:
+              description: updates a post-comment-reply
+              body:
+                example:
+              responses:
+                200:
+                  body:
+                    example:
+                400:
+                  description: |
+                    Error Codes:
+                    - *sale.ValidateSaleUuid*: The uuid already exists
+                  body:
+                    example: !include examples/invalid_field_error.json
+                404:
+                  description: |
+                    The requested resource can't be found
+                  body:
+                    example: !include examples/not_found_error.json
+                500:
+                  description:  |
+                    Internal server error
+                  body:
+                    example: !include examples/server_error.json
+            delete:
+              description: deletes a post-comment-reply
+              responses:
+                200:
+                  body:
+                    example:
+                404:
+                  description: |
+                    The requested resource can't be found
+                  body:
+                    example: !include examples/not_found_error.json
+                500:
+                  description:  |
+                    Internal server error
+                  body:
+                    example: !include examples/server_error.json
+            /likes:
+              post:
+                description: creates a post-comment-reply-like
+                responses:
+                  200:
+                    body:
+                      example:
+                  404:
+                    description: |
+                      The requested resource can't be found
+                    body:
+                      example: !include examples/not_found_error.json
+                  500:
+                    description:  |
+                      Internal server error
+                    body:
+                      example: !include examples/server_error.json
+              delete:
+                description: deletes a post-comment-reply-like
+                responses:
+                  200:
+                    body:
+                      example:
+                  404:
+                    description: |
+                      The requested resource can't be found
+                    body:
+                      example: !include examples/not_found_error.json
+                  500:
+                    description:  |
+                      Internal server error
+                    body:
+                      example: !include examples/server_error.json
+
+
