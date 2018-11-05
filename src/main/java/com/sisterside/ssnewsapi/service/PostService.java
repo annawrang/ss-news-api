@@ -1,9 +1,10 @@
 package com.sisterside.ssnewsapi.service;
 
+import com.sisterside.ssnewsapi.ModelMapperConverter;
 import com.sisterside.ssnewsapi.domain.Comment;
 import com.sisterside.ssnewsapi.domain.Post;
 import com.sisterside.ssnewsapi.domain.PostLike;
-import com.sisterside.ssnewsapi.domain.User;
+import com.sisterside.ssnewsapi.dto.PostDTO;
 import com.sisterside.ssnewsapi.exception.NotFoundException;
 import com.sisterside.ssnewsapi.repository.PostRepository;
 import com.sisterside.ssnewsapi.repository.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,16 +26,20 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostLogic postLogic;
     private final UserLogic userLogic;
+    private final ModelMapperConverter converter;
 
     @Autowired
     public PostService(PostRepository postRepository, PostLogic postLogic,
-                       UserLogic userLogic, UserRepository userRepository) {
+                       UserLogic userLogic, UserRepository userRepository,
+                       ModelMapperConverter converter) {
         this.postRepository = postRepository;
         this.postLogic = postLogic;
         this.userLogic = userLogic;
         this.userRepository = userRepository;
+        this.converter = converter;
     }
 
+    // Problem with paging and converting to Post..
     public List<Post> getPosts(int page, int numbersPerPage) {
         Sort sort = new Sort(Sort.Direction.DESC, "date");
         Pageable paging = new PageRequest(0, 10);
@@ -42,44 +48,42 @@ public class PostService {
     }
 
 
-    public Post saveNewPost(String userNumber, Post post) {
-        User user = userRepository.findByUserNumber(userNumber).orElseThrow(NotFoundException::new);
+    public void saveNewPost(Post post) {
         post = postLogic.setPostCreationTime(post);
         post.setPostNumber(UUID.randomUUID().toString());
-        post.setUser(user);
-        post = postRepository.save(post);
-        return post;
+        post.setComments(new ArrayList<>());
+        post.setLikes(new ArrayList<>());
+
+        postRepository.save(converter.convert(post));
     }
 
-    public Post saveNewPostLike(String postNumber, String userNumber) {
-        User user = userRepository.findByUserNumber(userNumber).orElseThrow(NotFoundException::new);
-        Post post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
-        PostLike newLike = new PostLike(user, UUID.randomUUID().toString());
-        post.getLikes().add(newLike);
+    public void saveNewPostLike(String postNumber, PostLike like) {
+        PostDTO post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
+        like.setPostLikeNumber(UUID.randomUUID().toString());
+        post.getLikes().add(like);
         post = postRepository.save(post);
-        return post;
     }
 
 
     public void deletePostLike(String postNumber, String likeNumber) {
-        Post post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
+        PostDTO post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
         PostLike like = post.getLikes().stream().filter(l -> l.getPostLikeNumber().equals(likeNumber)).findAny().orElseThrow(NotFoundException::new);
         post.getLikes().remove(like);
-        post = postRepository.save(post);
+        postRepository.save(post);
     }
 
 
-    public Post editPost(String postNumber, String userNumber, Post newPost) {
-        Post post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
+    public void editPost(String postNumber, Post newPost) {
+        PostDTO post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
         post.setEdited(true);
         post.setText(newPost.getText());
         postRepository.save(post);
-        return post;
     }
 
 
-    public Comment createPostComment(String postNumber, String userNumber, Comment newComment) {
-        Post post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
+    public Comment createPostComment(String postNumber, Comment newComment) {
+        PostDTO post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
+        newComment.setCommentNumber(UUID.randomUUID().toString());
         post.getComments().add(newComment);
         post = postRepository.save(post);
         return newComment;
@@ -87,13 +91,13 @@ public class PostService {
 
 
     public void deletePost(String postNumber) {
-        Post post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
+        PostDTO post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
         postRepository.delete(post);
     }
 
 
     public Post getPost(String postNumber) {
-        return postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
+        return converter.convert(postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new));
     }
 
     //    public void createPostCommentReply(String commentNumber, String userNumber, String newComment) {
@@ -127,21 +131,20 @@ public class PostService {
 //    }
 //
     public void deletePostComment(String postNumber, String commentNumber) {
-
-        Post post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
+        PostDTO post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
         Comment comment = post.getComments().stream().filter(c -> c.getCommentNumber().equals(commentNumber)).findAny().orElseThrow(NotFoundException::new);
         post.getComments().remove(comment);
-        post = postRepository.save(post);
+        postRepository.save(post);
     }
 
     public void updatePostComment(String postNumber, String commentNumber, Comment newComment) {
-        Post post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
+        PostDTO post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
         Comment oldComment = post.getComments().stream()
                 .filter(c -> c.getCommentNumber().equals(commentNumber))
                 .findAny().orElseThrow(NotFoundException::new);
         post.getComments().remove(oldComment);
         post.getComments().add(newComment);
-        post = postRepository.save(post);
+        postRepository.save(post);
     }
 //
 //    private void deleteReplyLike(String replyNumber, String userNumber) {

@@ -1,5 +1,8 @@
-package com.sisterside.ssnewsapi.domain;
+package com.sisterside.ssnewsapi.dto;
 
+import com.sisterside.ssnewsapi.domain.Comment;
+import com.sisterside.ssnewsapi.domain.PostLike;
+import com.sisterside.ssnewsapi.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,8 +17,9 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Post {
-
+public class PostDTO {
+    @Id
+    private ObjectId id;
     private LocalDateTime date;
     private String postNumber;
     @NotNull

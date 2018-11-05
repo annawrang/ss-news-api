@@ -40,7 +40,7 @@ documentation:
   post:
     description: creates a new post from a user
     body:
-      example:
+      example: !include ./examples/new-post.json
     responses:
       200:
         body:
@@ -114,7 +114,7 @@ documentation:
       responses:
         200:
           body:
-            example:
+            example: !include ./examples/new-post.json
         400:
           description: |
             Error Codes:
@@ -139,7 +139,7 @@ documentation:
         responses:
           200:
             body:
-              example:
+              example: !include ./examples/new-post-like.json
           404:
             description: |
               The requested resource can't be found
@@ -175,7 +175,7 @@ documentation:
         responses:
           200:
             body:
-              example:
+              example: !include ./examples/new-post-comment.json
           400:
             description: |
               Error Codes:
@@ -216,7 +216,7 @@ documentation:
           responses:
             200:
               body:
-                example:
+                example: !include ./examples/new-post-comment.json
             400:
               description: |
                 Error Codes:
@@ -239,7 +239,7 @@ documentation:
             responses:
               200:
                 body:
-                  example:
+                  example: !inlcude examples/new-post-like.json
               404:
                 description: |
                   The requested resource can't be found

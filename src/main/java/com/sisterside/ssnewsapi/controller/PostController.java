@@ -3,10 +3,12 @@ package com.sisterside.ssnewsapi.controller;
 
 import com.sisterside.ssnewsapi.domain.Comment;
 import com.sisterside.ssnewsapi.domain.Post;
+import com.sisterside.ssnewsapi.domain.PostLike;
 import com.sisterside.ssnewsapi.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -36,8 +38,8 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity createNewPost(@Valid @RequestBody Post post, @RequestParam String userNumber) {
-        postService.saveNewPost(userNumber, post);
+    public ResponseEntity createNewPost(@Validated @RequestBody Post post) {
+        postService.saveNewPost(post);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
@@ -47,20 +49,20 @@ public class PostController {
     }
 
     @DeleteMapping(path = "/{postNumber}")
-    public ResponseEntity deletePost(@PathVariable String postNumber, @RequestParam String userNumber) {
+    public ResponseEntity deletePost(@PathVariable String postNumber) {
         postService.deletePost(postNumber);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     @PutMapping(path = "/{postNumber}")
-    public ResponseEntity editPost(@Valid @PathVariable String postNumber, @RequestBody Post newPost, @RequestParam String userNumber) {
-        Post post = postService.editPost(postNumber, userNumber, newPost);
-        return new ResponseEntity(post, HttpStatus.OK);
+    public ResponseEntity editPost(@Valid @PathVariable String postNumber, @RequestBody Post newPost) {
+        postService.editPost(postNumber, newPost);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @PostMapping(value = "/{postNumber}/likes")
-    public ResponseEntity createNewPostLike(@PathVariable String postNumber, @RequestParam String userNumber) {
-        postService.saveNewPostLike(postNumber, userNumber);
+    public ResponseEntity createNewPostLike(@PathVariable String postNumber, @RequestBody PostLike like) {
+        postService.saveNewPostLike(postNumber, like);
         return new ResponseEntity(HttpStatus.OK);
     }
 
@@ -71,19 +73,19 @@ public class PostController {
     }
 
     @PostMapping(path = "/{postNumber}/comments")
-    public ResponseEntity createNewPostComment(@PathVariable String postNumber, @RequestBody Comment newComment, @RequestParam String userNumber) {
-       postService.createPostComment(postNumber, userNumber, newComment);
+    public ResponseEntity createNewPostComment(@PathVariable String postNumber, @RequestBody Comment newComment) {
+       postService.createPostComment(postNumber, newComment);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
     @DeleteMapping(path = "/{postNumber}/comments/{commentNumber}")
-    public ResponseEntity deletePostComment(@PathVariable String postNumber, @PathVariable String commentNumber, @RequestParam String userNumber) {
+    public ResponseEntity deletePostComment(@PathVariable String postNumber, @PathVariable String commentNumber) {
         postService.deletePostComment(postNumber, commentNumber);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
     @PutMapping(path = "/{postNumber}/comments/{commentNumber}")
-    public ResponseEntity updatePostComment(@PathVariable String postNumber, @PathVariable String commentNumber, @RequestBody Comment newComment, @RequestParam String userNumber) {
+    public ResponseEntity updatePostComment(@PathVariable String postNumber, @PathVariable String commentNumber, @RequestBody Comment newComment) {
         postService.updatePostComment(postNumber, commentNumber, newComment);
         return new ResponseEntity(HttpStatus.CREATED);
     }
