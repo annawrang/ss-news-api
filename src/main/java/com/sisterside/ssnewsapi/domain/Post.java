@@ -3,8 +3,6 @@ package com.sisterside.ssnewsapi.domain;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -23,7 +21,10 @@ public class Post {
     @NotBlank
     private String text;
     private boolean edited;
-    private List<PostLike> likes;
+    private List<Like> likes;
     private List<Comment> comments;
 
+    public void generateCreationTime(){
+        this.date = LocalDateTime.now();
+    }
 }

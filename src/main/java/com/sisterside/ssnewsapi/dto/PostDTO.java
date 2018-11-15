@@ -1,7 +1,7 @@
 package com.sisterside.ssnewsapi.dto;
 
 import com.sisterside.ssnewsapi.domain.Comment;
-import com.sisterside.ssnewsapi.domain.PostLike;
+import com.sisterside.ssnewsapi.domain.Like;
 import com.sisterside.ssnewsapi.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,13 +21,14 @@ public class PostDTO {
     @Id
     private ObjectId id;
     private LocalDateTime date;
+    @NotBlank
     private String postNumber;
     @NotNull
     private User user;
     @NotBlank
     private String text;
     private boolean edited;
-    private List<PostLike> likes;
+    private List<Like> likes;
     private List<Comment> comments;
 
 }

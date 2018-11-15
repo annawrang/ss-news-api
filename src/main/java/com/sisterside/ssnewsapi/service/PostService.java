@@ -2,12 +2,11 @@ package com.sisterside.ssnewsapi.service;
 
 import com.sisterside.ssnewsapi.ModelMapperConverter;
 import com.sisterside.ssnewsapi.domain.Comment;
+import com.sisterside.ssnewsapi.domain.Like;
 import com.sisterside.ssnewsapi.domain.Post;
-import com.sisterside.ssnewsapi.domain.PostLike;
 import com.sisterside.ssnewsapi.dto.PostDTO;
 import com.sisterside.ssnewsapi.exception.NotFoundException;
 import com.sisterside.ssnewsapi.repository.PostRepository;
-import com.sisterside.ssnewsapi.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,19 +22,12 @@ import java.util.UUID;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
-    private final PostLogic postLogic;
-    private final UserLogic userLogic;
     private final ModelMapperConverter converter;
 
     @Autowired
-    public PostService(PostRepository postRepository, PostLogic postLogic,
-                       UserLogic userLogic, UserRepository userRepository,
+    public PostService(PostRepository postRepository,
                        ModelMapperConverter converter) {
         this.postRepository = postRepository;
-        this.postLogic = postLogic;
-        this.userLogic = userLogic;
-        this.userRepository = userRepository;
         this.converter = converter;
     }
 
@@ -48,42 +40,48 @@ public class PostService {
     }
 
 
-    public void saveNewPost(Post post) {
-        post = postLogic.setPostCreationTime(post);
+    public Post saveNewPost(Post post) {
+        post.generateCreationTime();
         post.setPostNumber(UUID.randomUUID().toString());
         post.setComments(new ArrayList<>());
         post.setLikes(new ArrayList<>());
 
         postRepository.save(converter.convert(post));
+        return post;
     }
 
-    public void saveNewPostLike(String postNumber, PostLike like) {
-        PostDTO post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
-        like.setPostLikeNumber(UUID.randomUUID().toString());
+    public Like saveNewPostLike(String postNumber, Like like) {
+        PostDTO post = getPostDTO(postNumber);
+        like.setLikeNumber(UUID.randomUUID().toString());
         post.getLikes().add(like);
         post = postRepository.save(post);
+        return like;
     }
 
 
     public void deletePostLike(String postNumber, String likeNumber) {
-        PostDTO post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
-        PostLike like = post.getLikes().stream().filter(l -> l.getPostLikeNumber().equals(likeNumber)).findAny().orElseThrow(NotFoundException::new);
+        PostDTO post = getPostDTO(postNumber);
+        Like like = getPostLike(post, likeNumber);
         post.getLikes().remove(like);
         postRepository.save(post);
     }
 
 
-    public void editPost(String postNumber, Post newPost) {
-        PostDTO post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
+    public Post editPost(String postNumber, Post newPost) {
+        PostDTO post = getPostDTO(postNumber);
         post.setEdited(true);
         post.setText(newPost.getText());
         postRepository.save(post);
+        return converter.convert(post);
     }
 
 
     public Comment createPostComment(String postNumber, Comment newComment) {
-        PostDTO post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
+        PostDTO post = getPostDTO(postNumber);
         newComment.setCommentNumber(UUID.randomUUID().toString());
+        newComment.generateCreationTime();
+        newComment.setLikes(new ArrayList<>());
+        newComment.setCommentReplies(new ArrayList<>());
         post.getComments().add(newComment);
         post = postRepository.save(post);
         return newComment;
@@ -91,76 +89,126 @@ public class PostService {
 
 
     public void deletePost(String postNumber) {
-        PostDTO post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
+        PostDTO post = getPostDTO(postNumber);
         postRepository.delete(post);
     }
 
 
-    public Post getPost(String postNumber) {
-        return converter.convert(postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new));
+    public Post getPostByPostNumber(String postNumber) {
+        return converter.convert(getPostDTO(postNumber));
     }
 
-    //    public void createPostCommentReply(String commentNumber, String userNumber, String newComment) {
-//        CommentReplyDTO reply = postLogic.createPostCommentReply(commentNumber, userNumber, newComment);
-//        commentReplyRepository.save(reply);
-//    }
-//
-//
-//    public void createPostCommentLike(String userNumber, String postNumber, String commentNumber) {
-//        userLogic.validateUserExists(userNumber);
-//        postLogic.validatePostExists(postNumber);
-//        postLogic.validateCommentExists(commentNumber);
-//        if (!postLogic.doesCommentLikeExists(commentNumber, userNumber)) {
-//            CommentLikeDTO newLike = postLogic.createCommentLike(userNumber, commentNumber);
-//            commentLikeRepository.save(newLike);
-//        }
-//    }
-//
-//    public void deletePostCommentLike(String userNumber, String postNumber, String commentNumber, String commentLikeNumber) {
-//        userLogic.validateUserExists(userNumber);
-//        postLogic.validatePostExists(postNumber);
-//        postLogic.validateCommentExists(commentNumber);
-//        if (postLogic.doesCommentLikeExists(commentNumber, userNumber)) {
-//            deleteCommentLike(commentNumber, userNumber);
-//        }
-//    }
-//
-//    private void deleteCommentLike(String commentNumber, String userNumber) {
-//        CommentLikeDTO like = postLogic.validateCommentLikeExists(commentNumber, userNumber);
-//        commentLikeRepository.delete(like);
-//    }
-//
+    public Comment createPostCommentReply(String postNumber, String commentNumber, Comment newComment) {
+        PostDTO post = getPostDTO(postNumber);
+        Comment comment = getComment(post, commentNumber);
+        newComment.setLikes(new ArrayList<>());
+        newComment.setCommentNumber(UUID.randomUUID().toString());
+        comment.getCommentReplies().add(newComment);
+        postRepository.save(post);
+        return newComment;
+    }
+
+
+    public Like createPostCommentLike(String postNumber, String commentNumber, Like like) {
+        PostDTO post = getPostDTO(postNumber);
+        Comment comment = getComment(post, commentNumber);
+        like.setLikeNumber(UUID.randomUUID().toString());
+        comment.getLikes().add(like);
+        postRepository.save(post);
+        return like;
+    }
+
+    public void deletePostCommentLike(String postNumber, String commentNumber, String commentLikeNumber) {
+        PostDTO post = getPostDTO(postNumber);
+        Comment comment = getComment(post, commentNumber);
+        Like like = getCommentLike(comment, commentLikeNumber);
+        comment.getLikes().remove(like);
+        postRepository.save(post);
+    }
+
     public void deletePostComment(String postNumber, String commentNumber) {
-        PostDTO post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
-        Comment comment = post.getComments().stream().filter(c -> c.getCommentNumber().equals(commentNumber)).findAny().orElseThrow(NotFoundException::new);
+        PostDTO post = getPostDTO(postNumber);
+        Comment comment = getComment(post, commentNumber);
         post.getComments().remove(comment);
         postRepository.save(post);
     }
 
-    public void updatePostComment(String postNumber, String commentNumber, Comment newComment) {
-        PostDTO post = postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
-        Comment oldComment = post.getComments().stream()
-                .filter(c -> c.getCommentNumber().equals(commentNumber))
-                .findAny().orElseThrow(NotFoundException::new);
-        post.getComments().remove(oldComment);
-        post.getComments().add(newComment);
+    public Comment updatePostComment(String postNumber, String commentNumber, Comment newComment) {
+        PostDTO post = getPostDTO(postNumber);
+        Comment oldComment = getComment(post, commentNumber);
+        oldComment.setText(newComment.getText());
+        postRepository.save(post);
+        return oldComment;
+    }
+
+    public Comment updatePostCommentReply(String postNumber, String commentNumber, String commentReplyNumber, Comment newComment) {
+        PostDTO post = getPostDTO(postNumber);
+        Comment comment = getComment(post, commentNumber);
+        Comment commentReply = getCommentReply(comment, commentReplyNumber);
+        commentReply.setText(newComment.getText());
+        postRepository.save(post);
+        return commentReply;
+    }
+
+    public void deletePostCommentReply(String postNumber, String commentNumber, String commentReplyNumber) {
+        PostDTO post = getPostDTO(postNumber);
+        Comment comment = getComment(post, commentNumber);
+        Comment commentReply = getCommentReply(comment, commentReplyNumber);
+        comment.getCommentReplies().remove(commentReply);
         postRepository.save(post);
     }
-//
-//    private void deleteReplyLike(String replyNumber, String userNumber) {
-//        CommentReplyLikeDTO like = replyLikeRepository.findByCommentReplyNumber(replyNumber).get();
-//        replyLikeRepository.delete(like);
-//    }
-//
-//    public void updatePostCommentReply(String commentNumber, String userNumber, String newComment) {
-//    }
-//
-//    public void deletePostCommentReply(String commentNumber, String userNumber, String newComment) {
-//    }
-//
-//    public void createPostCommentReplyLike(String postNumber, String commentNumber, String commentReplyNumber, String userNumber) {
-//    }
-//
-//    public void deletePostCommentReplyLike(String postNumber, String commentNumber, String commentReplyNumber, String userNumber, String likeNumber) {
-//    }
+
+    public Like createPostCommentReplyLike(String postNumber, String commentNumber, String commentReplyNumber, Like like) {
+        PostDTO post = getPostDTO(postNumber);
+        Comment comment = getComment(post, commentNumber);
+        Comment commentReply = getCommentReply(comment, commentReplyNumber);
+        like.setLikeNumber(UUID.randomUUID().toString());
+        commentReply.getLikes().add(like);
+        postRepository.save(post);
+        return like;
+    }
+
+    public void deletePostCommentReplyLike(String postNumber, String commentNumber, String commentReplyNumber, String likeNumber) {
+        PostDTO post = getPostDTO(postNumber);
+        Comment comment = getComment(post, commentNumber);
+        Comment commentReply = getCommentReply(comment, commentReplyNumber);
+        Like like = getReplyLike(commentReply, likeNumber);
+
+        commentReply.getLikes().remove(like);
+        postRepository.save(post);
+    }
+
+    private PostDTO getPostDTO(String postNumber) {
+        return postRepository.findByPostNumber(postNumber).orElseThrow(NotFoundException::new);
+    }
+
+    private Like getReplyLike(Comment commentReply, String likeNumber) {
+        return commentReply.getLikes().stream()
+                .filter(l -> l.getLikeNumber().equals(likeNumber))
+                .findAny().orElseThrow(NotFoundException::new);
+    }
+
+    private Comment getCommentReply(Comment comment, String commentReplyNumber) {
+        return comment.getCommentReplies().stream()
+                .filter(cr -> cr.getCommentNumber().equals(commentReplyNumber))
+                .findAny().orElseThrow(NotFoundException::new);
+    }
+
+    private Comment getComment(PostDTO post, String commentNumber) {
+        return post.getComments().stream()
+                .filter(c -> c.getCommentNumber().equals(commentNumber))
+                .findAny().orElseThrow(NotFoundException::new);
+    }
+
+    private Like getCommentLike(Comment comment, String commentLikeNumber) {
+        return comment.getLikes().stream()
+                .filter(l -> l.getLikeNumber().equals(commentLikeNumber))
+                .findAny().orElseThrow(NotFoundException::new);
+    }
+
+    private Like getPostLike(PostDTO post, String likeNumber) {
+        return post.getLikes().stream()
+                .filter(l -> l.getLikeNumber().equals(likeNumber))
+                .findAny().orElseThrow(NotFoundException::new);
+    }
 }

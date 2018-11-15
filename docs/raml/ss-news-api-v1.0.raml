@@ -1,15 +1,15 @@
 #%RAML 0.8
 ---
 
-title: "Api Docs 2"
+title: "Sisterside News API"
 baseUri: http://localhost:8080/{version}
 version: 1.0
 protocols: [ HTTP ]
 mediaType: application/json
 documentation:
-  - title: RESTful API documentation for Api Docs 2
+  - title: RESTful API documentation for Sisterside News API
     content: |
-      Api Docs 2 documentation
+      Sisterside News API documentation
 
 /posts:
   get:
@@ -44,7 +44,7 @@ documentation:
     responses:
       200:
         body:
-          example:
+          example: !include ./examples/created-post.json
       400:
         description: |
           Error Codes:
@@ -80,7 +80,7 @@ documentation:
       responses:
         200:
           body:
-            example:
+            example: !include ./examples/created-post.json
         404:
           description: |
             The requested resource can't be found
@@ -95,8 +95,6 @@ documentation:
       description: deletes a post with its comments, likes, comment-likes and comment-replies
       responses:
         200:
-          body:
-            example:
         404:
           description: |
             The requested resource can't be found
@@ -110,7 +108,7 @@ documentation:
     put:
       description: updates a post
       body:
-        example:
+        example: !include ./examples/new-post.json
       responses:
         200:
           body:
@@ -135,7 +133,7 @@ documentation:
       post:
         description: create a post-like from a user
         body:
-          example:
+          example: !include ./examples/new-post-like.json
         responses:
           200:
             body:
@@ -155,8 +153,6 @@ documentation:
           description: delete a post-like from a user (unlike)
           responses:
             200:
-              body:
-                example:
             404:
               description: |
                 The requested resource can't be found
@@ -171,11 +167,11 @@ documentation:
       post:
         description: create a post-comment
         body:
-          example:
+          example: !include ./examples/new-post-comment.json
         responses:
           200:
             body:
-              example: !include ./examples/new-post-comment.json
+              example: !include ./examples/created-post-comment.json
           400:
             description: |
               Error Codes:
@@ -213,10 +209,10 @@ documentation:
           description: update a post-comment
           body:
             example:
-          responses:
+          responses: !include ./examples/new-post-comment.json
             200:
               body:
-                example: !include ./examples/new-post-comment.json
+                example: !include ./examples/created-post-comment.json
             400:
               description: |
                 Error Codes:
@@ -236,10 +232,12 @@ documentation:
         /likes:
           post:
             description: create a post-comment like
+            body:
+              example: !include ./examples/new-post-comment-like.json
             responses:
               200:
                 body:
-                  example: !inlcude examples/new-post-like.json
+                  example: !inlcude examples/created-post-like.json.json
               404:
                 description: |
                   The requested resource can't be found
@@ -271,11 +269,11 @@ documentation:
           post:
             description: create a post-comment-reply
             body:
-              example:
+              example: !include ./examples/new-post-comment.json
             responses:
               200:
                 body:
-                  example:
+                  example: !include ./examples/created-post-comment.json
               400:
                 description: |
                   Error Codes:
@@ -296,11 +294,11 @@ documentation:
             put:
               description: updates a post-comment-reply
               body:
-                example:
+                example: !include ./examples/new-post-comment.json
               responses:
                 200:
                   body:
-                    example:
+                    example: !include ./examples/created-post-comment.json
                 400:
                   description: |
                     Error Codes:
@@ -321,8 +319,6 @@ documentation:
               description: deletes a post-comment-reply
               responses:
                 200:
-                  body:
-                    example:
                 404:
                   description: |
                     The requested resource can't be found
@@ -336,10 +332,12 @@ documentation:
             /likes:
               post:
                 description: creates a post-comment-reply-like
+                body:
+                  example: !include ./examples/new-post-like.json
                 responses:
                   200:
                     body:
-                      example:
+                      example: !include ./examples/created-post-comment.json
                   404:
                     description: |
                       The requested resource can't be found

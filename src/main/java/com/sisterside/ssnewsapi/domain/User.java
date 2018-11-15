@@ -11,13 +11,10 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
-     @NotNull
      @NotBlank
      private String userNumber;
-     @NotNull
      @NotBlank
      private String firstName;
-     @NotNull
      @NotBlank
      private String surName;
 }
