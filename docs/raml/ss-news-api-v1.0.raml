@@ -208,8 +208,8 @@ documentation:
         put:
           description: update a post-comment
           body:
-            example:
-          responses: !include ./examples/new-post-comment.json
+            example: !include ./examples/new-post-comment.json
+          responses:
             200:
               body:
                 example: !include ./examples/created-post-comment.json
@@ -237,7 +237,7 @@ documentation:
             responses:
               200:
                 body:
-                  example: !inlcude examples/created-post-like.json.json
+                  example: !include ./examples/created-post-like.json
               404:
                 description: |
                   The requested resource can't be found
