@@ -30,6 +30,11 @@ public class PostController {
 //        binder.addValidators(postValidator);
 //    }
 
+    @GetMapping(value = "/hej")
+    public String getHej(){
+        return "Hej";
+    }
+
     @GetMapping
     public ResponseEntity getPosts(@RequestParam(defaultValue = "1", required = false) int page,
                                    @RequestParam(defaultValue = "10", required = false) int numbersPerPage) {

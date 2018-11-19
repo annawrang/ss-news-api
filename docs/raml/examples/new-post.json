@@ -4,5 +4,6 @@
 		"firstName": "Anna",
 		"surName": "Wrang"
 	},
-	"text": "My first post!"
+	"text": "My first post!",
+    "mediaUrl": "www.test.se"
 }
