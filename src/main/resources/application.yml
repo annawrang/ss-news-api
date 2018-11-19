@@ -1,5 +1,0 @@
-amazonProperties:
-  endpointUrl: https://s3.us-east-2.amazonaws.com
-  accessKey: AKIAJ2ZUNS375J6JVTZQ
-  secretKey: sUO0Ofm2teqPYq6Vyq0GysPdgZIcVJ9x3CN+2veL
-  bucketName: your-bucket-name
