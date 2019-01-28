@@ -4,14 +4,17 @@ package com.sisterside.ssnewsapi.controller;
 import com.sisterside.ssnewsapi.domain.Comment;
 import com.sisterside.ssnewsapi.domain.Like;
 import com.sisterside.ssnewsapi.domain.Post;
+import com.sisterside.ssnewsapi.exception.ForbiddenException;
 import com.sisterside.ssnewsapi.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import sun.misc.BASE64Decoder;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -24,11 +27,6 @@ public class PostController {
     public PostController(PostService service) {
         this.postService = service;
     }
-
-//    @InitBinder
-//    public void initBinder(WebDataBinder binder) {
-//        binder.addValidators(postValidator);
-//    }
 
     @GetMapping(value = "/hej")
     public String getHej(){
@@ -43,7 +41,13 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity createNewPost(@Validated @RequestBody Post post) {
+    public ResponseEntity createNewPost(@Validated @RequestBody Post post,
+                                        @RequestHeader("authorization") String authString) {
+
+        if(!isUserAuthenticated(authString)){
+            throw new ForbiddenException();
+        }
+
         post = postService.saveNewPost(post);
         return new ResponseEntity(post, HttpStatus.CREATED);
     }
@@ -153,4 +157,31 @@ public class PostController {
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
+    private boolean isUserAuthenticated(String authString){
+
+        String decodedAuth = "";
+        // Header is in the format "Basic 5tyc0uiDat4"
+        // We need to extract data before decoding it back to original string
+        String[] authParts = authString.split("\\s+");
+        String authInfo = authParts[1];
+        // Decode the data back to original string
+        byte[] bytes = null;
+        try {
+            bytes = new BASE64Decoder().decodeBuffer(authInfo);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        decodedAuth = new String(bytes);
+        System.out.println(decodedAuth);
+        return (decodedAuth.equalsIgnoreCase("anna.wrang@gmail.com:Hemligt"));
+
+        /**
+         * here you include your logic to validate user authentication.
+         * it can be using ldap, or token exchange mechanism or your
+         * custom authentication mechanism.
+         */
+        // your validation code goes here....
+
+    }
 }

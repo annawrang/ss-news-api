@@ -25,7 +25,7 @@ public class AmazonClient {
 
     private AmazonS3 s3client;
 
-    @Value("${amazonProperties.enpointUrl}")
+    @Value("${amazonProperties.endpointUrl}")
     private String endpointUrl;
 
     @Value("${amazonProperties.bucketName}")
@@ -40,7 +40,7 @@ public class AmazonClient {
     @PostConstruct
     private void initializeAmazon() {
         AWSCredentials credentials = new BasicAWSCredentials(this.accessKey, this.secretKey);
-        this.s3client = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
+        this.s3client = AmazonS3ClientBuilder.standard().withRegion("eu-west-2").withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
     }
 
     public String uploadFile(MultipartFile multipartFile) {
