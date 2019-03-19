@@ -1,4 +1,4 @@
-package com.sisterside.ssnewsapi.domain;
+package com.sisterside.ssnewsapi.resource;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class UserResource {
      @NotBlank
      private String userNumber;
      @NotBlank
